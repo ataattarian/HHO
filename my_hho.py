@@ -2,6 +2,8 @@ import numpy as np
 from mlr import MLR as CostFunction
 import random
 import math
+from scipy.stats import levy
+
 
 var_num = 6
 lowerBound = 1
@@ -38,4 +40,16 @@ for it in range(1, max_iter + 1):
                 z = [Hawk["Position"] for Hawk in Hawks]
                 z = np.reshape(z, (N, var_num))
                 Hawks[i]["Position"] = (rabbit["Position"] - np.mean(z, axis=0)) - random.random() * np.random.uniform(lowerBound, upperBound, size=var_num)
-
+        else:
+            r = random.random()
+            
+            if r>=0.5 and abs(Escaping_Energy)>=0.5:
+                jump_strength = 2 * (1-random.random())
+                Hawks[i]["Position"] = (rabbit["Position"] - Hawks[i]["Position"]) - Escaping_Energy*abs(jump_strength*rabbit["Position"]-Hawks[i]["Position"])
+            elif r<0.5 and abs(Escaping_Energy)>=0.5:
+                jump_strength = random.random()
+                Y = rabbit["Position"] - (Escaping_Energy*(abs(jump_strength*rabbit["Position"]-Hawks[i]["Position"])))
+                if CostFunction(Y,data)<Hawks[i]["Cost"]:
+                    Hawks[i]["Position"] = Y
+                else:
+                    Z = Y + np.random.rand(1,var_num) * levy.rvs(size=var_num)
